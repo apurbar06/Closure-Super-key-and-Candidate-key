@@ -1,4 +1,4 @@
-# Closor, Super key and Candidate key
+# Find closure of all possible combination of attributes also find Super key and Candidate key
 ---
 
 
