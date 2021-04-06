@@ -1,0 +1,1 @@
+# Find-clousor-of-all-possible-combination-of-attributes-and-also-find-super-key-and-candidate-key
