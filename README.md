@@ -1,6 +1,21 @@
-# Find closure of all possible combination of attributes also find Super key and Candidate key
+# 1. Find closure of all possible combination of attributes also find Super key and Candidate key
 ---
 
+
+## Algorithm
+
+### 1. Find closure
+```
+        C+ = C;
+        while (there is changes to C+)
+        {
+            do (for each functional dependency X->Y in F)
+            {
+                if (X⊆C+)
+                    then C+= C+∪Y
+            }
+        }
+```
 
 
 ## Cpp code
@@ -262,21 +277,10 @@ int main() {
 
 
 
-## Algorithm for closor
-```
-        C+ = C;
-        while (there is changes to C+)
-        {
-            do (for each functional dependency X->Y in F)
-            {
-                if (X⊆C+)
-                    then C+= C+∪Y
-            }
-        }
-```
 
+## Sample
 
-## Sample input
+### Input 1
 ```
 Enter the schema: EMPLOYEE(empid,empname,dept,age,salary,experience)
 
@@ -290,7 +294,7 @@ dept->experience
 ```
 
 
-## Sample output
+### Output 1
 ```
 Closure of (empid)+  :.............:  empid empname age dept experience salary 
 Closure of (empname)+  :.............:  empname
@@ -392,4 +396,495 @@ Super key.....(empid, empname, dept, age, salary, experience)
 
 
 Candidate key.....(empid)
+```
+
+
+
+
+
+
+
+# 2. Check equivalence of two given functional dependencys
+---
+
+
+## Algorithm
+
+### 1. Find cosure
+```
+        C+ = C;
+        while (there is changes to C+)
+        {
+            do (for each functional dependency X->Y in F)
+            {
+                if (X⊆C+)
+                    then C+= C+∪Y
+            }
+        }
+```
+### 2. Check equivalance of two FDs
+```
+       STEP 1: Suppose two FD sets P and Q are given, write FD of each set P and Q separately.
+
+       STEP 2: Take FD set P first and then find closure of each attribute of the left side of FD in P using FD set Q.
+
+       STEP 3: Now compare the closure of each attribute of P with the right-hand side of FD of P.
+
+       STEP 4: If closure of each attribute is equal to the right-hand side of FD of P, we say P is a subset of Q
+
+       STEP 5: Take FD set Q next and then find closure of each attribute of the left side of FD in Q using FD set P.
+
+       STEP 6: Now compare the closure of each attribute of Q with the right-hand side of FD of Q.
+
+       STEP 7: If closure of each attribute is equal to right-hand side of FD of Q, we say Q is a subset of P
+
+       STEP 8: IF P is a subset of Q and Q is a subset of P, we can say P = Q.
+```
+
+
+
+## Cpp code
+```cpp
+
+#include <bits/stdc++.h>
+#include<vector>
+#include<stdio.h>
+#include<string.h>
+#include<conio.h>
+using namespace std;
+
+
+//functional dependency representation
+struct fd { 
+   int left[8];
+   int right[8];
+   int lcount,rcount;
+} f1[10], f2[10];
+
+
+int attr1count,clos1count=0,fd1count;
+int closure1[10];
+char attr1[10][25];
+
+int attr2count,clos2count=0,fd2count;
+int closure2[10];
+char attr2[10][25];
+
+
+
+
+bool isSubset(vector<string> subset, vector<string> set) {
+    bool isSubset;
+
+    // vector<string> subset, set;
+    int m = set.size();
+    int n = subset.size();
+    unordered_set<string> s;
+    for (int i = 0; i < m; i++) 
+        s.insert(set[i]);
+    int p = s.size();
+    for (int i = 0; i < n; i++) 
+        s.insert(subset[i]);
+    if (s.size() == p) 
+        isSubset = true;
+    else 
+        isSubset = false;
+
+
+
+    return isSubset;
+}
+
+
+
+void getclosure1() {
+    int i,j,k,l=0,issubset,found;
+    do {
+        for(i=0;i<=fd1count;i++) {    //Checking each functional dependancy
+            issubset=1;
+            for(j=0;j<f1[i].lcount;j++) {      // This for loop is for checking if left side of i'th FD is a subser of present closure1 or not
+                found=0;
+                for(k=0;k<clos1count;k++) {    //checking with each element of closure1
+                    if(closure1[k]==f1[i].left[j]) {              // checking if j'th element of i'th FD is present in the closure1 set
+                        found=1;
+                        break;
+                    }
+                }
+                if(found==0) {
+                    issubset=0;
+                    break;
+                }
+            }
+            if(issubset==1) {                          // If left side of i'th FD is a subset
+                for(k=0;k<f1[i].rcount;k++) {           // This for loop will add all elements in right side of i'th FD if that element is 
+                    found=0;                           // not already present in the closure1 set
+                    for(j=0;j<clos1count;j++) {
+                        if(closure1[j]==f1[i].right[k])
+                            found=1;
+                    }
+                    if(found==0) {
+                        closure1[clos1count]=f1[i].right[k];
+                        clos1count++;
+                    }
+                }
+            }
+        }
+        l++;
+    } while(l<attr1count);
+}
+
+
+
+void getclosure2() {
+    int i,j,k,l=0,issubset,found;
+    do {
+        for(i=0;i<=fd2count;i++) {    //Checking each functional dependancy
+            issubset=1;
+            for(j=0;j<f2[i].lcount;j++) {      // This for loop is for checking if left side of i'th FD is a subser of present closure2 or not
+                found=0;
+                for(k=0;k<clos2count;k++) {    //checking with each element of closure2
+                    if(closure2[k]==f2[i].left[j]) {              // checking if j'th element of i'th FD is present in the closure2 set
+                        found=1;
+                        break;
+                    }
+                }
+                if(found==0) {
+                    issubset=0;
+                    break;
+                }
+            }
+            if(issubset==1) {                          // If left side of i'th FD is a subset
+                for(k=0;k<f2[i].rcount;k++) {           // This for loop will add all elements in right side of i'th FD if that element is 
+                    found=0;                           // not already present in the closure2 set
+                    for(j=0;j<clos2count;j++) {
+                        if(closure2[j]==f2[i].right[k])
+                            found=1;
+                    }
+                    if(found==0) {
+                        closure2[clos2count]=f2[i].right[k];
+                        clos2count++;
+                    }
+                }
+            }
+        }
+        l++;
+    } while(l<attr2count);
+}
+
+
+
+
+// function to get the position of a attribute in the main attr1 array
+int compare1(char temp[25]) {
+   int i;
+   for(i=0;i<attr1count;i++) {
+        if(strcmp(temp,attr1[i])==0)
+            return i;
+    }
+    return 0;                                      
+}
+
+
+
+
+// function to get the position of a attribute in the main attr2 array
+int compare2(char temp[25]) {
+   int i;
+   for(i=0;i<attr2count;i++) {
+        if(strcmp(temp,attr2[i])==0)
+            return i;
+    }
+    return 0;                                      
+}
+
+
+
+
+int main() {
+
+    int i,j,k,att1code, att2code;
+    char schema[100],temp[45],temp1[50];
+    for(i=0;i<10;i++) {                              // maximum number of FD is 10 
+        f1[i].lcount=0;
+        f1[i].rcount=0;
+    }
+    for(i=0;i<10;i++) {                              // maximum number of FD is 10 
+        f2[i].lcount=0;
+        f2[i].rcount=0;
+    }
+
+
+    #pragma region take input from user
+
+    cout<< endl << "Enter the schema: ";
+    gets(schema);
+    attr1count=0;
+    attr2count=0;
+    for(i=0;schema[i]!='(';i++);                      // i is now at the starting point of attributes
+
+    do {                                             // this while loop will copy all attributes from the schema to attr1 array
+        j=0;
+        i++;
+        while(schema[i]!=',' && schema[i]!=')') {     // this while loop is for copying one attribute in temp 
+            temp[j]=schema[i];
+            j++;
+            i++;
+        }
+        temp[j]='\0';
+        strcpy(attr1[attr1count],temp);                // keeping attribute from temp to attr1
+        attr1count++;
+        strcpy(attr2[attr2count],temp);                // keeping attribute from temp to attr2
+        attr2count++;
+    } while(schema[i]==',');
+
+
+
+    fd1count=-1;
+    cout<< endl << "Enter the first set of functional dependancies..."<< endl << "----------Enter 0 to stop----------" << endl;
+    for(i=0;i<10;i++) {
+        gets(temp1);                                // Getting FD as input
+        if(strcmp(temp1,"0")==0)                    // If input is 0 then break
+            break;
+        fd1count++;
+        j=0;
+        if(temp1[0]=='{'||temp1[0]=='(')
+            j++;                                   // j is at starting point of FD
+
+        do {                                       // This while loop is for getting all left attributes of the FD of outer for loop            
+            if(temp1[j]==',')
+                j++;
+            k=0;
+            while(temp1[j]!=','&&temp1[j]!=')'&&temp1[j]!='}'&&temp1[j]!='-') {           // This while loop will get one attribute in 
+                temp[k]=temp1[j];                                                         // left side from the FD of outer for loop
+                k++;
+                j++;
+            }
+
+            temp[k]='\0';
+            att1code=compare1(temp);                                         // Getting the position of temp in attr1 array
+            f1[fd1count].left[f1[fd1count].lcount]=att1code;                    // Setting the attribute in appropriate position of our fd structure
+            f1[fd1count].lcount++;                                           // Incrementing the left count for the fd
+        } while(temp1[j]==',');
+
+        if(temp1[j]==')'||temp1[j]=='}')                                   // j will point first character of right side of FD from for loop
+            j+=3;                                           
+        else if(temp1[j]=='-')
+            j+=2;
+        if(temp1[j]=='{'||temp1[j]=='(')
+            j++;
+
+        do {                                            // This while loop is for getting all right attributes of the FD of outer for loop
+            if(temp1[j]==',')
+                j++;
+            k=0;
+            while(temp1[j]!=','&&temp1[j]!=')'&&temp1[j]!='}'&&temp1[j]!='\0') {            // This while loop will get one attribute in                                                 
+                temp[k]=temp1[j];                                                           // right side from the FD of outer for loop
+                k++;
+                j++;
+            }
+            temp[k]='\0';
+            att1code=compare1(temp);                                         // Getting the position of temp in attr1 array
+            f1[fd1count].right[f1[fd1count].rcount]=att1code;                   // Setting the attribute in appropriate position of our fd structure
+            f1[fd1count].rcount++;                                           // Incrementing theright count for the fd
+        } while(temp1[j]==',');
+
+    }
+
+
+
+    fd2count=-1;
+    cout<< endl << "Enter the second set of functional dependancies..."<< endl << "----------Enter 0 to stop----------" << endl;
+    for(i=0;i<10;i++) {
+        gets(temp1);                                // Getting FD as input
+        if(strcmp(temp1,"0")==0)                    // If input is 0 then break
+            break;
+        fd2count++;
+        j=0;
+        if(temp1[0]=='{'||temp1[0]=='(')
+            j++;                                   // j is at starting point of FD
+
+        do {                                       // This while loop is for getting all left attributes of the FD of outer for loop            
+            if(temp1[j]==',')
+                j++;
+            k=0;
+            while(temp1[j]!=','&&temp1[j]!=')'&&temp1[j]!='}'&&temp1[j]!='-') {           // This while loop will get one attribute in 
+                temp[k]=temp1[j];                                                         // left side from the FD of outer for loop
+                k++;
+                j++;
+            }
+
+            temp[k]='\0';
+            att2code=compare2(temp);                                         // Getting the position of temp in attr2 array
+            f2[fd2count].left[f2[fd2count].lcount]=att2code;                    // Setting the attribute in appropriate position of our fd structure
+            f2[fd2count].lcount++;                                           // Incrementing the left count for the fd
+        } while(temp1[j]==',');
+
+        if(temp1[j]==')'||temp1[j]=='}')                                   // j will point first character of right side of FD from for loop
+            j+=3;                                           
+        else if(temp1[j]=='-')
+            j+=2;
+        if(temp1[j]=='{'||temp1[j]=='(')
+            j++;
+
+        do {                                            // This while loop is for getting all right attributes of the FD of outer for loop
+            if(temp1[j]==',')
+                j++;
+            k=0;
+            while(temp1[j]!=','&&temp1[j]!=')'&&temp1[j]!='}'&&temp1[j]!='\0') {            // This while loop will get one attribute in                                                 
+                temp[k]=temp1[j];                                                           // right side from the FD of outer for loop
+                k++;
+                j++;
+            }
+            temp[k]='\0';
+            att2code=compare2(temp);                                         // Getting the position of temp in attr2 array
+            f2[fd2count].right[f2[fd2count].rcount]=att2code;                   // Setting the attribute in appropriate position of our fd structure
+            f2[fd2count].rcount++;                                           // Incrementing theright count for the fd
+        } while(temp1[j]==',');
+
+    }
+
+    #pragma endregion
+
+
+
+
+
+    #pragma region make decision
+
+    cout << endl;
+    bool isFirstSetSubsetOfSecondSet=true, isSecondSetSubsetOfFirstSet=true;
+
+    for(i=0;i<=fd1count;i++) {                                                         // This for loop will check if first set of FD is subset of second set of FD
+        vector<string> str, subStr;
+
+        clos2count=0;
+        for(j=0;j<f1[i].lcount;j++) {     
+            closure2[clos2count]=compare2(attr1[f1[i].left[j]]);                                // Getting the position of attribute attr1[f1[i].left[j]] in
+            clos2count++;                                                                       // attr2 and assigning it to closure2
+        }
+        getclosure2();
+        for(j=0;j<clos2count;j++) {
+            str.push_back(attr2[closure2[j]]);
+        }
+
+
+        for(j=0;j<f1[i].rcount;j++) {    
+            subStr.push_back(attr1[f1[i].right[j]]);   
+        }
+        
+        if(!isSubset(subStr, str)) {                                                     // Checking if right side of fd1[i] is a subset of closure(got from fd2) 
+            isFirstSetSubsetOfSecondSet=false;                                           // of left side of fd1[i]
+            break;
+        }
+            
+    }
+
+
+
+
+    for(i=0;i<=fd2count;i++) {                                                  // This for loop will check if second set of FD is subset of first set of FD
+        vector<string> str, subStr;
+
+        clos1count=0;
+        for(j=0;j<f2[i].lcount;j++) {     
+            closure1[clos1count]=compare1(attr2[f2[i].left[j]]);                                // Getting the position of attribute attr2[f2[i].left[j]] in
+            clos1count++;                                                                       // attr1 and assigning it to closure1
+        }
+        getclosure1();                                                        // Get closure of fd2[i]th left attributes using fd1
+        for(j=0;j<clos1count;j++) {
+            str.push_back(attr1[closure1[j]]);
+        }
+
+
+        for(j=0;j<f2[i].rcount;j++) {    
+            subStr.push_back(attr2[f2[i].right[j]]);   
+        }
+        
+        if(!isSubset(subStr, str)) {                                                        // Checking if right side of fd2[i] is a subset of closure(got from fd1) 
+            isSecondSetSubsetOfFirstSet=false;                                              // of left side of fd2[i]
+            break;
+        }
+            
+    }
+
+
+    #pragma endregion
+
+
+
+
+    #pragma region show output
+
+    if(isFirstSetSubsetOfSecondSet && isSecondSetSubsetOfFirstSet)
+        cout << "Given two set of FDs are equal." << endl;
+    else
+        cout << "Given two set of FDs are not equal." << endl;
+        
+    #pragma endregion
+
+    
+
+    return 0;
+}
+
+```
+
+
+
+
+
+
+
+
+## Sample 
+
+### Input 1
+```
+Enter the schema: R(x,y,z,w,v)
+
+Enter the first set of functional dependancies...
+----------Enter 0 to stop----------
+x->y
+xy->z
+w->x,z
+w->v
+0
+
+Enter the second set of functional dependancies...
+----------Enter 0 to stop----------
+x->y,z
+w->x,v
+0
+```
+
+### Output 1
+```
+Given two set of FDs are equal.
+```
+
+
+
+
+### Input 2
+```
+Enter the schema: R(a,b,c,d)
+
+Enter the first set of functional dependancies...
+----------Enter 0 to stop----------
+a->b
+b->c
+c->d
+0
+
+Enter the second set of functional dependancies...
+----------Enter 0 to stop----------
+a->b,c
+c->d
+0
+```
+
+
+### Output 2
+```
+Given two set of FDs are not equal.
 ```
